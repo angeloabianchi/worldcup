@@ -12,6 +12,8 @@ class Prediction(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    points = models.IntegerField(default=0)
+
     def __str__(self):
         return f"{self.participant} - {self.match}"
 

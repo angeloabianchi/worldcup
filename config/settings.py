@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'predictions',                  # predicciones Excel
     'scoring',                      # motor de puntos
     'api',                          # endpoints DRF
+    'core.apps.CoreConfig',         # Ejecuta el POST para actualizar los resultados de los partidos y pontuación de cada participante
 ]
 
 
@@ -82,6 +83,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
+        'DIRS': ['templates'], 
     },
 ]
 
@@ -138,3 +140,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = []
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+# Ejecuta el POST para actualizar los resultados de los partidos y pontuación de cada participante
+#from core.auto_updater import start_auto_update
+
+#start_auto_update()

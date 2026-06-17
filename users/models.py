@@ -9,7 +9,5 @@ class Participant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     display_name = models.CharField(max_length=100)
 
-    
     def __str__(self):
-        console.log(username)
-        return self.username
+        return self.display_name or self.user.username

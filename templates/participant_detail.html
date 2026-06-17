@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 style="text-align:left; margin-left:15%;">
+    👤 {{ participant.display_name }}
+</h1>
+
+<div style="width:70%; margin:auto;">
+
+    <table style="
+        width:100%;
+        border-collapse:collapse;
+        background:white;
+    ">
+        <thead>
+            <tr style="background:#333; color:white;">
+                <th>Partido</th>
+                <th>Predicción</th>
+                <th>Resultado</th>
+                <th>Puntos</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for p in predictions %}
+            <tr style="border-bottom:1px solid #eee;">
+
+                <!-- PARTIDO -->
+                <td style="padding:10px;">
+                    {{ p.match.home_team }} vs {{ p.match.away_team }}
+                </td>
+
+                <!-- PREDICCIÓN -->
+                <td style="text-align:center;">
+                    {{ p.predicted_home_score }}-{{ p.predicted_away_score }}
+                </td>
+
+                <!-- RESULTADO REAL -->
+                <td style="text-align:center;">
+                    {% if p.match.home_score is not None %}
+                        {{ p.match.home_score }}-{{ p.match.away_score }}
+                    {% else %}
+                        <span style="color:#999;">sin jugar</span>
+                    {% endif %}
+                </td>
+
+                <!-- PUNTOS -->
+                <td style="text-align:center; font-weight:bold;">
+                    {{ p.points }}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}
+``

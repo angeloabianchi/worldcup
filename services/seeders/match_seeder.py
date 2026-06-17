@@ -43,48 +43,40 @@ class MatchSeeder:
         # ✅ SOLO en desarrollo
         Match.objects.all().delete()
 
-        # ✅ mantener estado del grupo actual
         current_stage = None
 
         for _, row in df.iterrows():
             try:
-                # 🔥 1. DETECTAR GRUPO (columna izquierda del Excel)
-                group_value = row[22]  # <-- columna del grupo (A, B, C...)
+                # 🔥 1. DETECTAR SI EMPIEZAN ELIMINATORIAS
+                row_values = [str(x).lower() for x in row if isinstance(x, str)]
+
+                if any(
+                    keyword in value
+                    for value in row_values
+                    for keyword in [
+                        "1/16", "dieciseisavos",
+                        "1/8", "octavos",
+                        "1/4", "cuartos",
+                        "semi",
+                        "final"
+                    ]
+                ):
+                    break  # ✅ PARAR completamente el import
+
+                # ✅ 2. DETECTAR GRUPO
+                group_value = row[22]
 
                 if isinstance(group_value, str):
                     value = group_value.strip()
 
-                    value = str(group_value).strip()
-
-                    # ✅ GRUPOS
                     if value in list("ABCDEFGHIJKL"):
-                        current_stage = f"{value}"
+                        current_stage = f"GROUP_{value}"
 
-                    # ✅ DIECISEISAVOS
-                    elif "1/16" in value or "dieciseisavos" in value.lower():
-                        current_stage = "R16"
+                # ✅ SOLO si tenemos grupo válido
+                if not current_stage:
+                    continue
 
-                    # ✅ OCTAVOS
-                    elif "1/8" in value or "octavos" in value.lower():
-                        current_stage = "Octavas de Final"
-
-                    # ✅ CUARTOS
-                    elif "1/4" in value or "cuartos" in value.lower():
-                        current_stage = "Cuartas de Final"
-
-                    # ✅ SEMI
-                    elif "1/2" in value or "semi" in value.lower():
-                        current_stage = "Semi-Final"
-
-                    # ✅ 3º y 4º
-                    elif "3" in value and "4" in value:
-                        current_stage = "Tercero y Cuarto"
-
-                    # ✅ FINAL
-                    elif "F" in value.lower():
-                        current_stage = "FINAL"
-
-                # 🔥 2. LEER EQUIPOS (columnas reales)
+                # ✅ 3. EQUIPOS
                 home_team = row[26]  # AB
                 away_team = row[31]  # AE
 
@@ -97,32 +89,30 @@ class MatchSeeder:
                 home_team = home_team.strip()
                 away_team = away_team.strip()
 
-                # 🔥 3. GOLES (opcionales)
-                gol1 = row[28]  # AC
-                gol2 = row[29]  # AD
+                # ✅ 4. GOLES (opcionales)
+                # gol1 = row[28]
+                # gol2 = row[29]
 
                 home_score = None
                 away_score = None
 
-                if str(gol1).isdigit() and str(gol2).isdigit():
-                    home_score = int(gol1)
-                    away_score = int(gol2)
+                # if str(gol1).isdigit() and str(gol2).isdigit():
+                #    home_score = int(gol1)
+                #    away_score = int(gol2)
 
-                # 🔥 4. FECHA
+                # ✅ 5. FECHA
                 match_date = row[23]
 
                 if pd.isna(match_date):
                     match_date = timezone.now()
 
-                # 🔥 5. STAGE (grupo o fallback)
-                stage_name = current_stage or "GROUP"
-
+                # ✅ 6. STAGE
                 stage, _ = TournamentStage.objects.get_or_create(
-                    name=stage_name,
+                    name=current_stage,
                     defaults={"order": 1}
                 )
 
-                # 🔥 6. EVITAR DUPLICADOS
+                # ✅ 7. EVITAR DUPLICADOS
                 if Match.objects.filter(
                     tournament=tournament,
                     home_team=home_team,
@@ -130,7 +120,7 @@ class MatchSeeder:
                 ).exists():
                     continue
 
-                # 🔥 7. CREAR MATCH
+                # ✅ 8. CREAR MATCH
                 Match.objects.create(
                     tournament=tournament,
                     home_team=home_team,

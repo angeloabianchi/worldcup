@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>🏆 Ranking</h1>
+
+<table id="leaderboard">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Participant</th>
+            <th>Total</th>
+            <th>Group</th>
+            <th>KO</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+async function loadLeaderboard() {
+    const response = await fetch("/api/leaderboard/");
+    const data = await response.json();
+
+    const table = document.querySelector("#leaderboard tbody");
+    table.innerHTML = "";
+
+    data.sort((a, b) => b.total_points - a.total_points);
+
+    let currentRank = 1;
+    let previousPoints = null;
+
+    data.forEach((item, index) => {
+
+        if (previousPoints !== null && item.total_points < previousPoints) {
+            currentRank = index + 1;
+        }
+
+        previousPoints = item.total_points;
+
+        let label = currentRank;
+        let className = "";
+
+        if (currentRank === 1) {
+            label = "🥇"; className = "gold";
+        } else if (currentRank === 2) {
+            label = "🥈"; className = "silver";
+        } else if (currentRank === 3) {
+            label = "🥉"; className = "bronze";
+        }
+
+        const row = `
+            <tr class="${className}">
+                <td>${label}</td>
+                <td>
+                    <a href="/api/participant/${item.participant__display_name}/">
+                        ${item.participant__display_name}
+                    </a>
+                </td>
+                <td>${item.total_points}</td>
+                <td>${item.group_points}</td>
+                <td>${item.knockout_points}</td>
+            </tr>
+        `;
+
+        table.innerHTML += row;
+    });
+}
+
+loadLeaderboard();
+setInterval(loadLeaderboard, 30000);
+</script>
+
+{% endblock %}

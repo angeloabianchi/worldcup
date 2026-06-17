@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 style="text-align:left; margin-left:15%;">⚽ Partidos y resultados</h1>
+
+<div style="width:70%; margin:auto;">
+
+    <!-- ========================= -->
+    <!-- ✅ FASE DE GRUPOS -->
+    <!-- ========================= -->
+    <h2 style="text-align:left;">Fase de grupos</h2>
+
+    {% regroup group_matches by stage.name as grouped_matches %}
+
+    {% for group in grouped_matches %}
+
+    <!-- ✅ TITULO A LA IZQUIERDA -->
+    <h3 style="text-align:left; margin:20px 0 5px 5px;">
+        Grupo {{ group.grouper|cut:"GROUP_" }}
+    </h3>
+
+    <div style="
+        border:1px solid #ddd;
+        border-radius:10px;
+        margin-bottom:20px;
+        background:white;
+    ">
+
+        {% for match in group.list %}
+        <div style="
+            display:flex;
+            padding:10px;
+            border-top:1px solid #eee;
+            align-items:center;
+        ">
+
+            <!-- LOCAL -->
+            <div style="width:40%; text-align:right;">
+                {{ match.home_team }}
+            </div>
+
+            <!-- RESULTADO -->
+            <div style="width:20%; text-align:center; font-weight:bold;">
+                {% if match.home_score is not None %}
+                    {{ match.home_score }}-{{ match.away_score }}
+                {% else %}
+                    <span style="color:#999;">sin jugar</span>
+                {% endif %}
+            </div>
+
+            <!-- VISITANTE -->
+            <div style="width:40%; text-align:left;">
+                {{ match.away_team }}
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% endfor %}
+
+
+    <!-- ========================= -->
+    <!-- ✅ ELIMINATORIAS -->
+    <!-- ========================= -->
+
+    <h2 style="text-align:left;">Fase eliminatoria</h2>
+
+    {% if knockout_matches %}
+
+        {% regroup knockout_matches by stage.name as ko_groups %}
+
+        {% for phase in ko_groups %}
+
+        <h3 style="text-align:left; margin:20px 0 5px 5px;">
+            {% if phase.grouper == "R16" %}
+                Octavos de final
+            {% elif phase.grouper == "QF" %}
+                Cuartos de final
+            {% elif phase.grouper == "SF" %}
+                Semifinal
+            {% elif phase.grouper == "FINAL" %}
+                Final
+            {% else %}
+                {{ phase.grouper }}
+            {% endif %}
+        </h3>
+
+        <div style="
+            border:1px solid #ddd;
+            border-radius:10px;
+            margin-bottom:20px;
+            background:white;
+        ">
+
+            {% for match in phase.list %}
+            <div style="
+                display:flex;
+                padding:10px;
+                border-top:1px solid #eee;
+                align-items:center;
+            ">
+
+                <div style="width:40%; text-align:right;">
+                    {{ match.home_team }}
+                </div>
+
+                <div style="width:20%; text-align:center; font-weight:bold;">
+                    {% if match.home_score is not None %}
+                        {{ match.home_score }}-{{ match.away_score }}
+                    {% else %}
+                        <span style="color:#999;">sin jugar</span>
+                    {% endif %}
+                </div>
+
+                <div style="width:40%; text-align:left;">
+                    {{ match.away_team }}
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+        <div style="color:#888; margin-top:10px;">
+            Aún no se han generado los partidos eliminatorios
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
