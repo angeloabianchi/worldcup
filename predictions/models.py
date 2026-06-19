@@ -3,9 +3,17 @@ from users.models import Participant
 from matches.models import Match
 
 
+
 class Prediction(models.Model):
-    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    participant = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE
+    )
+
+    match = models.ForeignKey(
+        Match,
+        on_delete=models.CASCADE
+    )
 
     predicted_home_score = models.IntegerField()
     predicted_away_score = models.IntegerField()
@@ -14,16 +22,62 @@ class Prediction(models.Model):
 
     points = models.IntegerField(default=0)
 
-    def __str__(self):
-        return f"{self.participant} - {self.match}"
+    class Meta:
+        unique_together = ("participant", "match")
 
 
 class BonusPrediction(models.Model):
-    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    participant = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE
+    )
 
-    champion = models.CharField(max_length=50)
-    runner_up = models.CharField(max_length=50)
-    third_place = models.CharField(max_length=50)
+    champion = models.CharField(max_length=100)
 
-    # ejemplo premios
-    best_player = models.CharField(max_length=50, null=True, blank=True)
+    runner_up = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    third_place = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    golden_boot = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    silver_boot = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    bronze_boot = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    golden_ball = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    silver_ball = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    bronze_ball = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )

@@ -12,7 +12,7 @@ from predictions.services.prediction_importer import PredictionImporter
 from scoring.services.scoring_engine import run_scoring
 from matches.services.results_updater import update_match_results
 
-from predictions.models import Prediction
+from predictions.models import Prediction, BonusPrediction
 from django.db.models import Sum, Case, When, IntegerField
 
 from django.shortcuts import render, get_object_or_404
@@ -148,14 +148,40 @@ def matches_view(request):
 
 
 def participant_detail(request, name):
-    participant = get_object_or_404(Participant, display_name=name)
+    participant = get_object_or_404(
+        Participant,
+        display_name=name
+    )
 
-    predictions = Prediction.objects.filter(
+    predictions = (
+        Prediction.objects
+        .filter(participant=participant)
+        .select_related('match', 'match__stage')
+        .order_by(
+            'match__stage__name',
+            'match__match_date'
+        )
+    )
+
+    group_predictions = predictions.filter(
+        match__stage__name__startswith="GROUP"
+    )
+
+    knockout_predictions = predictions.exclude(
+        match__stage__name__startswith="GROUP"
+    )
+
+    bonus = BonusPrediction.objects.filter(
         participant=participant
-    ).select_related('match').order_by('match__match_date')
+    ).first()
 
-    return render(request, 'participant_detail.html', {
-        'participant': participant,
-        'predictions': predictions
-    })
-
+    return render(
+        request,
+        'participant_detail.html',
+        {
+            'participant': participant,
+            'bonus': bonus,
+            'group_predictions': group_predictions,
+            'knockout_predictions': knockout_predictions
+        }
+    )

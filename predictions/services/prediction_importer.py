@@ -1,5 +1,5 @@
 import pandas as pd
-from predictions.models import Prediction
+from predictions.models import Prediction, BonusPrediction
 from matches.models import Match
 from users.models import Participant, User
 
@@ -46,7 +46,29 @@ class PredictionImporter:
 
     def run(self):
         df = self.load_data()
+
         participant = self.get_or_create_participant()
+
+
+        BonusPrediction.objects.filter(
+            participant=participant
+        ).delete()
+
+        bonus = BonusPrediction.objects.create(
+            participant=participant,
+
+            champion=str(df.iloc[149, 26]).strip(),
+            runner_up=str(df.iloc[150, 26]).strip(),
+            third_place=str(df.iloc[151, 26]).strip(),
+
+            golden_boot=str(df.iloc[153, 26]).strip(),
+            silver_boot=str(df.iloc[154, 26]).strip(),
+            bronze_boot=str(df.iloc[155, 26]).strip(),
+
+            golden_ball=str(df.iloc[157, 26]).strip(),
+            silver_ball=str(df.iloc[158, 26]).strip(),
+            bronze_ball=str(df.iloc[159, 26]).strip(),
+        )
 
         created = 0
 
@@ -83,6 +105,17 @@ class PredictionImporter:
                     print(f"❌ NO MATCH FOUND: {home_team} vs {away_team}")
                     continue
 
+                
+                print(
+                    "MATCH:",
+                    home_team,
+                    "vs",
+                    away_team,
+                    "->",
+                    match
+                )
+
+
                 # ✅ evitar duplicados
                 if Prediction.objects.filter(
                     participant=participant,
@@ -97,6 +130,15 @@ class PredictionImporter:
                     predicted_home_score=pred_home,
                     predicted_away_score=pred_away
                 )
+
+                
+                print(
+                    "✅ PREDICTION CREADA:",
+                    participant.display_name,
+                    home_team,
+                    away_team
+                )
+
 
                 created += 1
 

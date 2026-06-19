@@ -61,6 +61,7 @@ TEAM_MAP = {
     "Algeria": "Argelia",
     "South Africa": "Sudáfrica",
     "Cape Verde Islands": "Cabo Verde",
+    "Congo DR": "RD Congo",
 
     # ASIA
     "Japan": "Japón",
@@ -70,6 +71,7 @@ TEAM_MAP = {
     "Saudi Arabia": "Arabia Saudita",
     "Qatar": "Catar",
     "Australia": "Australia",
+    "Uzbekistan": "Uzbekistán",
 
     # OTROS POSIBLES
     "New Zealand": "Nueva Zelanda",
