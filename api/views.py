@@ -12,7 +12,11 @@ from predictions.services.prediction_importer import PredictionImporter
 from scoring.services.scoring_engine import run_scoring
 from matches.services.results_updater import update_match_results
 
-from predictions.models import Prediction, BonusPrediction
+from predictions.models import Prediction, KnockoutPrediction, BonusPrediction
+from matches.services.group_standings import (
+    calculate_group_table
+)
+
 from django.db.models import Sum, Case, When, IntegerField
 
 from django.shortcuts import render, get_object_or_404
@@ -139,37 +143,138 @@ def matches_view(request):
 
     # ✅ separar fases
     group_matches = matches.filter(stage__name__startswith="GROUP")
-    knockout_matches = matches.exclude(stage__name__startswith="GROUP")
+    
+    knockout_matches = (
+        matches
+        .exclude(stage__name__startswith="GROUP")
+        .order_by(
+            "stage__order",
+            "match_date"
+        )
+    )
 
-    return render(request, 'matches.html', {
+    group_tables = {}
+
+    for group in [
+        "GROUP_A",
+        "GROUP_B",
+        "GROUP_C",
+        "GROUP_D",
+        "GROUP_E",
+        "GROUP_F",
+        "GROUP_G",
+        "GROUP_H",
+        "GROUP_I",
+        "GROUP_J",
+        "GROUP_K",
+        "GROUP_L",
+    ]:
+        group_tables[group] = (
+            calculate_group_table(group)
+        )
+
+
+    return render(
+    request,
+    'matches.html',
+    {
         'group_matches': group_matches,
-        'knockout_matches': knockout_matches
-    })
+        'knockout_matches': knockout_matches,
+        'group_tables': group_tables,
+    }
+)
 
+
+# def participant_detail(request, name):
+#     participant = get_object_or_404(
+#         Participant,
+#         display_name=name
+#     )
+
+#     predictions = (
+#         Prediction.objects
+#         .filter(participant=participant)
+#         .select_related('match', 'match__stage')
+#         .order_by(
+#             'match__stage__name',
+#             'match__match_date'
+#         )
+#     )
+
+#     group_predictions = predictions.filter(
+#         match__stage__name__startswith="GROUP"
+#     )
+
+#     knockout_predictions = predictions.exclude(
+#         match__stage__name__startswith="GROUP"
+#     )
+
+#     bonus = BonusPrediction.objects.filter(
+#         participant=participant
+#     ).first()
+
+#     return render(
+#         request,
+#         'participant_detail.html',
+#         {
+#             'participant': participant,
+#             'bonus': bonus,
+#             'group_predictions': group_predictions,
+#             'knockout_predictions': knockout_predictions
+#         }
+#     )
 
 def participant_detail(request, name):
+
     participant = get_object_or_404(
         Participant,
         display_name=name
     )
 
-    predictions = (
+    group_predictions = (
         Prediction.objects
-        .filter(participant=participant)
-        .select_related('match', 'match__stage')
+        .filter(
+            participant=participant,
+            match__stage__name__startswith="GROUP"
+        )
+        .select_related(
+            "match",
+            "match__stage"
+        )
         .order_by(
-            'match__stage__name',
-            'match__match_date'
+            "match__stage__name",
+            "match__match_date"
         )
     )
 
-    group_predictions = predictions.filter(
-        match__stage__name__startswith="GROUP"
-    )
+    ordered_stages = [
+        "ROUND_OF_32",
+        "ROUND_OF_16",
+        "QUARTER_FINAL",
+        "SEMI_FINAL",
+        "THIRD_PLACE",
+        "FINAL",
+    ]
 
-    knockout_predictions = predictions.exclude(
-        match__stage__name__startswith="GROUP"
-    )
+    knockout_groups = []
+
+    for stage_name in ordered_stages:
+
+        stage_predictions = (
+            KnockoutPrediction.objects
+            .filter(
+                participant=participant,
+                stage=stage_name
+            )
+        )
+
+        if stage_predictions.exists():
+            knockout_groups.append(
+                (
+                    stage_name,
+                    stage_predictions
+                )
+            )
 
     bonus = BonusPrediction.objects.filter(
         participant=participant
@@ -177,11 +282,11 @@ def participant_detail(request, name):
 
     return render(
         request,
-        'participant_detail.html',
+        "participant_detail.html",
         {
-            'participant': participant,
-            'bonus': bonus,
-            'group_predictions': group_predictions,
-            'knockout_predictions': knockout_predictions
+            "participant": participant,
+            "bonus": bonus,
+            "group_predictions": group_predictions,
+            "knockout_groups": knockout_groups,
         }
     )

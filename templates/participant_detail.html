@@ -6,7 +6,6 @@
     👤 {{ participant.display_name }}
 </h1>
 
-
 {% if bonus %}
 
 <div style="
@@ -108,67 +107,62 @@
     ">
 
         {% for prediction in group.list %}
+
+        <div style="
+            display:flex;
+            padding:10px;
+            border-top:1px solid #eee;
+            align-items:center;
+        ">
+
             <div style="
-                display:flex;
-                padding:10px;
-                border-top:1px solid #eee;
-                align-items:center;
+                width:10%;
+                text-align:center;
+                font-weight:bold;
+
+                {% if prediction.points >= 5 %}
+                    color:green;
+                {% elif prediction.points > 0 %}
+                    color:orange;
+                {% else %}
+                    color:#999;
+                {% endif %}
             ">
-
-                <!-- PUNTOS -->
-                
-                <div style="
-                    width:10%;
-                    text-align:center;
-                    font-weight:bold;
-
-                    {% if prediction.points >= 5 %}
-                        color:green;
-                    {% elif prediction.points > 0 %}
-                        color:orange;
-                    {% else %}
-                        color:#999;
-                    {% endif %}
-                ">
-                    {{ prediction.points }}
-                </div>
-
-
-                <!-- LOCAL -->
-                <div style="width:25%; text-align:right;">
-                    {{ prediction.match.home_team }}
-                </div>
-
-                <!-- PREDICCIÓN -->
-                <div style="
-                    width:15%;
-                    text-align:center;
-                    font-weight:bold;
-                ">
-                    {{ prediction.predicted_home_score }}-{{ prediction.predicted_away_score }}
-                </div>
-
-                <!-- VISITANTE -->
-                <div style="width:25%; text-align:left;">
-                    {{ prediction.match.away_team }}
-                </div>
-
-                <!-- RESULTADO REAL -->
-                <div style="
-                    width:25%;
-                    text-align:center;
-                    color:#666;
-                ">
-                    {% if prediction.match.home_score is not None %}
-                        {{ prediction.match.home_score }}-{{ prediction.match.away_score }}
-                    {% else %}
-                        <span style="color:#999;">
-                            sin jugar
-                        </span>
-                    {% endif %}
-                </div>
-
+                {{ prediction.points }}
             </div>
+
+            <div style="width:25%; text-align:right;">
+                {{ prediction.match.home_team }}
+            </div>
+
+            <div style="
+                width:15%;
+                text-align:center;
+                font-weight:bold;
+            ">
+                {{ prediction.predicted_home_score }}-{{ prediction.predicted_away_score }}
+            </div>
+
+            <div style="width:25%; text-align:left;">
+                {{ prediction.match.away_team }}
+            </div>
+
+            <div style="
+                width:25%;
+                text-align:center;
+                color:#666;
+            ">
+                {% if prediction.match.home_score is not None %}
+                    {{ prediction.match.home_score }}-{{ prediction.match.away_score }}
+                {% else %}
+                    <span style="color:#999;">
+                        sin jugar
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+
         {% endfor %}
 
     </div>
@@ -177,24 +171,30 @@
 
     <h2 style="text-align:left;">Fase eliminatoria</h2>
 
-    {% if knockout_predictions %}
+    {% if knockout_groups %}
 
-        {% regroup knockout_predictions by match.stage.name as knockout_groups %}
-
-        {% for phase in knockout_groups %}
+        {% for stage_name, predictions in knockout_groups %}
 
         <h3 style="text-align:left; margin:20px 0 5px 5px;">
 
-            {% if phase.grouper == "R16" %}
+            {% if stage_name == "ROUND_OF_32" %}
+                Dieciseisavos de final
+
+            {% elif stage_name == "ROUND_OF_16" %}
                 Octavos de final
-            {% elif phase.grouper == "QF" %}
+
+            {% elif stage_name == "QUARTER_FINAL" %}
                 Cuartos de final
-            {% elif phase.grouper == "SF" %}
-                Semifinal
-            {% elif phase.grouper == "FINAL" %}
+
+            {% elif stage_name == "SEMI_FINAL" %}
+                Semifinales
+
+            {% elif stage_name == "THIRD_PLACE" %}
+                3º - 4º puesto
+
+            {% elif stage_name == "FINAL" %}
                 Final
-            {% else %}
-                {{ phase.grouper }}
+
             {% endif %}
 
         </h3>
@@ -206,7 +206,8 @@
             background:white;
         ">
 
-            {% for prediction in phase.list %}
+            {% for prediction in predictions %}
+
             <div style="
                 display:flex;
                 padding:10px;
@@ -214,37 +215,62 @@
                 align-items:center;
             ">
 
-                <div style="width:30%; text-align:right;">
-                    {{ prediction.match.home_team }}
+                <div style="
+                    width:10%;
+                    text-align:center;
+                    font-weight:bold;
+                    color:#999;
+                ">
+                    {{ prediction.points }}
                 </div>
 
                 <div style="
-                    width:15%;
-                    text-align:center;
-                    font-weight:bold;
+                    width:22%;
+                    text-align:right;
                 ">
-                    {{ prediction.predicted_home_score }}-{{ prediction.predicted_away_score }}
+                    {{ prediction.home_team }}
                 </div>
 
-                <div style="width:30%; text-align:left;">
-                    {{ prediction.match.away_team }}
+                <div style="
+                    width:21%;
+                    text-align:center;
+                    font-weight:bold;
+                    white-space:nowrap;
+                ">
+
+                    {% if prediction.predicted_home_score == prediction.predicted_away_score and prediction.predicted_home_penalties %}
+
+                        {{ prediction.predicted_home_penalties }}
+                        |
+                        {{ prediction.predicted_home_score }}-{{ prediction.predicted_away_score }}
+                        |
+                        {{ prediction.predicted_away_penalties }}
+
+                    {% else %}
+
+                        {{ prediction.predicted_home_score }}-{{ prediction.predicted_away_score }}
+
+                    {% endif %}
+
+                </div>
+
+                <div style="
+                    width:22%;
+                    text-align:left;
+                ">
+                    {{ prediction.away_team }}
                 </div>
 
                 <div style="
                     width:25%;
                     text-align:center;
-                    color:#666;
+                    color:#999;
                 ">
-                    {% if prediction.match.home_score is not None %}
-                        {{ prediction.match.home_score }}-{{ prediction.match.away_score }}
-                    {% else %}
-                        <span style="color:#999;">
-                            sin jugar
-                        </span>
-                    {% endif %}
+                    sin jugar
                 </div>
 
             </div>
+
             {% endfor %}
 
         </div>
@@ -252,9 +278,11 @@
         {% endfor %}
 
     {% else %}
+
         <div style="color:#888;">
             Sin partidos eliminatorios todavía
         </div>
+
     {% endif %}
 
 </div>

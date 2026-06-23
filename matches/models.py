@@ -12,15 +12,12 @@ class Tournament(models.Model):
 
 
 class TournamentStage(models.Model):
-    STAGE_CHOICES = [
-        ('GROUP', 'Group Stage'),
-        ('R16', 'Round of 16'),
-        ('QF', 'Quarter Final'),
-        ('SF', 'Semi Final'),
-        ('FINAL', 'Final'),
-    ]
 
-    name = models.CharField(max_length=20, choices=STAGE_CHOICES)
+    name = models.CharField(
+        max_length=50,
+        unique=True
+    )
+
     order = models.IntegerField()
 
     def __str__(self):
@@ -28,6 +25,13 @@ class TournamentStage(models.Model):
 
 
 class Match(models.Model):
+
+    api_match_id = models.BigIntegerField(
+        unique=True,
+        null=True,
+        blank=True
+    )
+
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     stage = models.ForeignKey(TournamentStage, on_delete=models.CASCADE)
 

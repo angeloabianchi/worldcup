@@ -3,8 +3,8 @@ from users.models import Participant
 from matches.models import Match
 
 
-
 class Prediction(models.Model):
+
     participant = models.ForeignKey(
         Participant,
         on_delete=models.CASCADE
@@ -16,23 +16,87 @@ class Prediction(models.Model):
     )
 
     predicted_home_score = models.IntegerField()
+
     predicted_away_score = models.IntegerField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    predicted_home_penalties = models.IntegerField(
+        null=True,
+        blank=True
+    )
 
-    points = models.IntegerField(default=0)
+    predicted_away_penalties = models.IntegerField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    points = models.IntegerField(
+        default=0
+    )
 
     class Meta:
-        unique_together = ("participant", "match")
+        unique_together = (
+            "participant",
+            "match"
+        )
 
 
-class BonusPrediction(models.Model):
+class KnockoutPrediction(models.Model):
+
     participant = models.ForeignKey(
         Participant,
         on_delete=models.CASCADE
     )
 
-    champion = models.CharField(max_length=100)
+    stage = models.CharField(
+        max_length=50
+    )
+
+    home_team = models.CharField(
+        max_length=100
+    )
+
+    away_team = models.CharField(
+        max_length=100
+    )
+
+    predicted_home_score = models.IntegerField()
+
+    predicted_away_score = models.IntegerField()
+
+    predicted_home_penalties = models.IntegerField(
+        null=True,
+        blank=True
+    )
+
+    predicted_away_penalties = models.IntegerField(
+        null=True,
+        blank=True
+    )
+
+    points = models.IntegerField(
+        default=0
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+
+
+class BonusPrediction(models.Model):
+
+    participant = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE
+    )
+
+    champion = models.CharField(
+        max_length=100
+    )
 
     runner_up = models.CharField(
         max_length=100,

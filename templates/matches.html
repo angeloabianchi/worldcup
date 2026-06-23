@@ -1,72 +1,165 @@
 {% extends "base.html" %}
 
+{% load custom_tags %}
+
 {% block content %}
 
-<h1 style="text-align:left; margin-left:15%;">⚽ Partidos y resultados</h1>
+<h1 style="text-align:left; margin-left:15%;">
+    ⚽ Partidos y resultados
+</h1>
 
-<div style="width:70%; margin:auto;">
+<div style="width:80%; margin:auto;">
 
-    <!-- ========================= -->
-    <!-- ✅ FASE DE GRUPOS -->
-    <!-- ========================= -->
     <h2 style="text-align:left;">Fase de grupos</h2>
 
     {% regroup group_matches by stage.name as grouped_matches %}
 
     {% for group in grouped_matches %}
 
-    <!-- ✅ TITULO A LA IZQUIERDA -->
     <h3 style="text-align:left; margin:20px 0 5px 5px;">
         Grupo {{ group.grouper|cut:"GROUP_" }}
     </h3>
 
     <div style="
-        border:1px solid #ddd;
-        border-radius:10px;
+        display:flex;
+        gap:20px;
         margin-bottom:20px;
-        background:white;
+        align-items:flex-start;
     ">
 
-        {% for match in group.list %}
+        <!-- PARTIDOS -->
+
         <div style="
-            display:flex;
-            padding:10px;
-            border-top:1px solid #eee;
-            align-items:center;
+            flex:2;
+            border:1px solid #ddd;
+            border-radius:10px;
+            background:white;
         ">
 
-            <!-- LOCAL -->
-            <div style="width:40%; text-align:right;">
-                {{ match.home_team }}
+            {% for match in group.list %}
+
+            <div style="
+                display:flex;
+                padding:10px;
+                border-top:1px solid #eee;
+                align-items:center;
+            ">
+
+                <div style="
+                    width:40%;
+                    text-align:right;
+                ">
+                    {{ match.home_team }}
+                </div>
+
+                <div style="
+                    width:20%;
+                    text-align:center;
+                    font-weight:bold;
+                ">
+                    {% if match.home_score is not None %}
+                        {{ match.home_score }}-{{ match.away_score }}
+                    {% else %}
+                        <span style="color:#999;">
+                            sin jugar
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div style="
+                    width:40%;
+                    text-align:left;
+                ">
+                    {{ match.away_team }}
+                </div>
+
             </div>
 
-            <!-- RESULTADO -->
-            <div style="width:20%; text-align:center; font-weight:bold;">
-                {% if match.home_score is not None %}
-                    {{ match.home_score }}-{{ match.away_score }}
-                {% else %}
-                    <span style="color:#999;">sin jugar</span>
-                {% endif %}
-            </div>
-
-            <!-- VISITANTE -->
-            <div style="width:40%; text-align:left;">
-                {{ match.away_team }}
-            </div>
+            {% endfor %}
 
         </div>
-        {% endfor %}
+
+        <!-- CLASIFICACIÓN -->
+
+        <div style="
+            flex:1;
+            border:1px solid #ddd;
+            border-radius:10px;
+            background:white;
+            padding:10px;
+        ">
+
+            <h4 style="
+                margin-top:0;
+                margin-bottom:10px;
+            ">
+                Clasificación
+            </h4>
+
+            <table style="
+                width:100%;
+                border-collapse:collapse;
+                font-size:14px;
+            ">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th style="text-align:left;">Equipo</th>
+                        <th>PJ</th>
+                        <th>G</th>
+                        <th>E</th>
+                        <th>P</th>
+                        <th>GF</th>
+                        <th>GC</th>
+                        <th>DG</th>
+                        <th>Pts</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for team in group_tables|get_item:group.grouper %}
+
+                    <tr>
+
+                        <td>{{ forloop.counter }}</td>
+
+                        <td style="text-align:left;">
+                            {{ team.team }}
+                        </td>
+
+                        <td>{{ team.pj }}</td>
+                        <td>{{ team.g }}</td>
+                        <td>{{ team.e }}</td>
+                        <td>{{ team.p }}</td>
+                        <td>{{ team.gf }}</td>
+                        <td>{{ team.gc }}</td>
+                        <td>{{ team.dg }}</td>
+
+                        <td>
+                            <strong>
+                                {{ team.pts }}
+                            </strong>
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </div>
 
     {% endfor %}
 
-
-    <!-- ========================= -->
-    <!-- ✅ ELIMINATORIAS -->
-    <!-- ========================= -->
-
-    <h2 style="text-align:left;">Fase eliminatoria</h2>
+    <h2 style="text-align:left;">
+        Fase eliminatoria
+    </h2>
 
     {% if knockout_matches %}
 
@@ -74,18 +167,34 @@
 
         {% for phase in ko_groups %}
 
-        <h3 style="text-align:left; margin:20px 0 5px 5px;">
-            {% if phase.grouper == "R16" %}
+        <h3 style="
+            text-align:left;
+            margin:20px 0 5px 5px;
+        ">
+
+            {% if phase.grouper == "ROUND_OF_32" %}
+                Dieciseisavos de final
+
+            {% elif phase.grouper == "ROUND_OF_16" %}
                 Octavos de final
-            {% elif phase.grouper == "QF" %}
+
+            {% elif phase.grouper == "QUARTER_FINAL" %}
                 Cuartos de final
-            {% elif phase.grouper == "SF" %}
-                Semifinal
+
+            {% elif phase.grouper == "SEMI_FINAL" %}
+                Semifinales
+
+            {% elif phase.grouper == "THIRD_PLACE" %}
+                3º - 4º puesto
+
             {% elif phase.grouper == "FINAL" %}
                 Final
+
             {% else %}
                 {{ phase.grouper }}
+
             {% endif %}
+
         </h3>
 
         <div style="
@@ -96,6 +205,7 @@
         ">
 
             {% for match in phase.list %}
+
             <div style="
                 display:flex;
                 padding:10px;
@@ -103,23 +213,36 @@
                 align-items:center;
             ">
 
-                <div style="width:40%; text-align:right;">
+                <div style="
+                    width:40%;
+                    text-align:right;
+                ">
                     {{ match.home_team }}
                 </div>
 
-                <div style="width:20%; text-align:center; font-weight:bold;">
+                <div style="
+                    width:20%;
+                    text-align:center;
+                    font-weight:bold;
+                ">
                     {% if match.home_score is not None %}
                         {{ match.home_score }}-{{ match.away_score }}
                     {% else %}
-                        <span style="color:#999;">sin jugar</span>
+                        <span style="color:#999;">
+                            sin jugar
+                        </span>
                     {% endif %}
                 </div>
 
-                <div style="width:40%; text-align:left;">
+                <div style="
+                    width:40%;
+                    text-align:left;
+                ">
                     {{ match.away_team }}
                 </div>
 
             </div>
+
             {% endfor %}
 
         </div>
@@ -127,9 +250,14 @@
         {% endfor %}
 
     {% else %}
-        <div style="color:#888; margin-top:10px;">
+
+        <div style="
+            color:#888;
+            margin-top:10px;
+        ">
             Aún no se han generado los partidos eliminatorios
         </div>
+
     {% endif %}
 
 </div>
